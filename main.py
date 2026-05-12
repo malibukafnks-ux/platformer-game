@@ -1,13 +1,17 @@
 import pygame
 
-from config import WIDTH, HEIGHT
+from config import WIDTH, HEIGHT, FPS
+from player import Player
 
 pygame.init()
 
 # 0. Подготовка игровых ресурсов
 screen = pygame.display.set_mode((WIDTH,HEIGHT))
+pygame.display.set_caption('Jumper Max')
+clock = pygame.time.Clock()
 
 def main():
+    player = Player(50, 500)
     while True:
 
         # 1. Считывание ввода
@@ -19,8 +23,9 @@ def main():
 
         # 3. Отрисовка обновленного состояния игры
         screen.fill('white')
+        screen.blit(player.image, player.rect)
         pygame.display.update()
-        pygame.time.delay(1000 // 60)
+        clock.tick(FPS)
 
 if __name__ == '__main__':
     main()
