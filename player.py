@@ -1,5 +1,5 @@
 import pygame
-from config import PLAYER_SPEED
+from config import PLAYER_SPEED, GRAVITY, JUMP_POWER, WIDTH
 
 
 class Player(pygame.sprite.Sprite):
@@ -8,3 +8,32 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.Surface((32, 48))
         self.image.fill('blue')
         self.rect = self.image.get_rect(topleft=(x, y))
+
+        self.velocity_y = 0
+        self.on_ground = False
+
+    def update(self, platforms):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]:
+            self.rect.x -= PLAYER_SPEED
+        if keys[pygame.K_RIGHT]:
+            self.rect.x += PLAYER_SPEED
+        if self.rect.left < 0:
+            self.rect.left = 0
+        if self.rect.right > WIDTH:
+            self.rect.right = WIDTH
+
+        self.velocity_y += GRAVITY
+        self.rect.y += self.velocity_y
+
+        self.on_ground = False
+        for platform in pygame.sprite.spritecollide(self, platforms, False):
+            if self.velocity_y > 0:
+                self.rect.bottom = platform.rect.top
+                self.velocity_y = 0
+                self.on_ground = True
+                break
+
+    def jump(self):
+        if self.on_ground:
+            self.velocity_y = JUMP_POWER
