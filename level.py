@@ -2,16 +2,24 @@ import pygame
 from config import TILE_SIZE, ENEMY_PATROL_TILES
 from traps import Spike, Enemy
 
+class Goal(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = pygame.image.load('assets/goal.png')
+        self.image = pygame.transform.scale(self.image, (TILE_SIZE, TILE_SIZE))
+        self.rect = self.image.get_rect(topleft=(x, y))
+
 
 class Platform(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-        self.image = pygame.Surface((TILE_SIZE, TILE_SIZE))
-        self.image.fill('green')
+        self.image = pygame.image.load('assets/tile.png')
+        self.image = pygame.transform.scale(self.image, (TILE_SIZE, TILE_SIZE))
         self.rect = self.image.get_rect(topleft=(x, y))
 
 
 def load_level(level_data):
+    goal = None
     platforms = pygame.sprite.Group()
     spikes = pygame.sprite.Group()
     enemies = pygame.sprite.Group()
@@ -38,21 +46,23 @@ def load_level(level_data):
                     else:
                         break
                 enemies.add(Enemy(x, y, left_col * TILE_SIZE, (right_col + 1) * TILE_SIZE))
-    return platforms, spikes, enemies
+            elif symbol == 'G':
+                goal = Goal(x,y)
+    return platforms,goal, spikes, enemies
 
 LEVEL_1 = [
     '0000000000000000000000000',
     '0000000000000000000000000',
     '0000000000000000000000000',
     '0000000000000000000000000',
-    '0000000000000000000000000',
+    '00000000000G0000000000000',
     '0000000000111000000000000',
     '0000000000000000000000000',
+    '000000SE0000000000ES00000',
+    '0000011110000000011110000',
     '0000000000000000000000000',
-    '0000001110000000011100000',
-    '0000000000000000000000000',
-    '0000000000010000E00000000',
-    '0001110000000001110000000',
+    '0000SS0000000000E00000000',
+    '0000111000000001110000000',
     '0000000000000000000000000',
     '0000000000000000000000000',
     '0000000000111000000000000',

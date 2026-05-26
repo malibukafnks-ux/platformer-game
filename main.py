@@ -1,8 +1,9 @@
 import pygame
 
-from config import WIDTH, HEIGHT, FPS, TILE_SIZE
+from config import WIDTH, HEIGHT, FPS, TILE_SIZE, HITBOX_SHRINK, HURT_BOUNCE_POWER, GRAVITY
 from level import Platform, LEVEL_1, load_level
 from player import Player
+from ui import draw_lives, draw_game_over, draw_win
 
 pygame.init()
 
@@ -13,10 +14,43 @@ clock = pygame.time.Clock()
 # platforms = pygame.sprite.Group()
 # for x in range(0, WIDTH, TILE_SIZE):
 #     platforms.add(Platform(x, HEIGHT - TILE_SIZE))
-platforms,spikes,enemies = load_level(LEVEL_1)
+
+
+
+def shrunk_rect(sprite):
+    return sprite.rect.inflate(-HITBOX_SHRINK, -HITBOX_SHRINK)
+
+
+def player_touches(player, sprite):
+    return shrunk_rect(player).colliderect(shrunk_rect(sprite))
+
+
+def handle_falling(player):
+    if player.rect.top > HEIGHT:
+        player.lives -= 1
+        player.reset_position()
+        return True
+    return False
+
+
+def handle_traps(player, enemies, spikes):
+    hit = any(player_touches(player, e) for e in enemies)
+    hit = hit or any(player_touches(player, s) for s in spikes)
+    if hit:
+        player.lives -= 1
+        player.velocity_y = HURT_BOUNCE_POWER
+        player.on_ground = False
+        return True
+    return False
 
 def main():
     player = Player(50, 500)
+    platforms,goal, spikes, enemies = load_level(LEVEL_1)
+    game_over = False
+    win = False
+    hurt = False
+    background = pygame.image.load('assets/background.png')
+    background = pygame.transform.scale(background, (WIDTH, HEIGHT))
     while True:
 
         # 1. Считывание ввода
@@ -25,19 +59,57 @@ def main():
                 return
             if event.type == pygame.KEYDOWN:
                 if event.key== pygame.K_SPACE:
+
                     player.jump()
+                if event.key == pygame.K_r and (game_over or win):
+                    player = Player(50, 500)
+                    platforms, goal, spikes, enemies = load_level(LEVEL_1)
+                    game_over = False
+                    win = False
+                    hurt = False
 
         # 2. Обновление состояния игры
-        player.update(platforms)
-        enemies.update()
+        #player.update(platforms)
+        #enemies.update()
+        if not game_over and not win:  # СТАЛО
+            enemies.update()
+            if hurt:
+                player.velocity_y += GRAVITY
+                player.rect.y += player.velocity_y
+                if player.rect.top > HEIGHT:
+                    if player.lives <= 0:
+                        game_over = True
+                    else:
+                        player.reset_position()
+                        hurt = False
+            else:
+                player.update(platforms)
+
+                if handle_falling(player):
+                    if player.lives <= 0:
+                        game_over = True
+
+                if not game_over and handle_traps(player, enemies, spikes):
+                    hurt = True
+                if goal is not None and player_touches(player, goal):
+                    win = True
         # 3. Отрисовка обновленного состояния игры
-        screen.fill('white')
+        #screen.fill('white')
+        screen.blit(background,(0,0))
         platforms.draw(screen)
         spikes.draw(screen)
+        screen.blit(goal.image, goal.rect)
         screen.blit(player.image, player.rect)
         enemies.draw(screen)
+        draw_lives(screen, player.lives, 10, 10)
+        if game_over:
+            draw_game_over(screen, WIDTH, HEIGHT)
+        if win:
+            draw_win(screen, WIDTH, HEIGHT)
         pygame.display.update()
         clock.tick(FPS)
+
+
 
 if __name__ == '__main__':
     main()

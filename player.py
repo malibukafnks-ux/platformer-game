@@ -1,22 +1,34 @@
 import pygame
-from config import PLAYER_SPEED, GRAVITY, JUMP_POWER, WIDTH
+from config import PLAYER_SPEED, GRAVITY, JUMP_POWER, WIDTH, PLAYER_WIDTH, PLAYER_HEIGHT
 
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-        self.image = pygame.Surface((32, 48))
-        self.image.fill('blue')
+        self.image_left = pygame.image.load('assets/player_left.png')
+        self.image_left = pygame.transform.scale(self.image_left, (PLAYER_WIDTH, PLAYER_HEIGHT))
+        self.image_right = pygame.image.load('assets/player_right.png')
+        self.image_right = pygame.transform.scale(self.image_right, (PLAYER_WIDTH, PLAYER_HEIGHT))
+        self.image = self.image_right
         self.rect = self.image.get_rect(topleft=(x, y))
 
         self.velocity_y = 0
         self.on_ground = False
+        self.lives = 3
+        self.spawn_x = x
+        self.spawn_y = y
+
+    def reset_position(self):
+        self.rect.topleft = (self.spawn_x, self.spawn_y)
+        self.velocity_y = 0
 
     def update(self, platforms):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
             self.rect.x -= PLAYER_SPEED
+            self.image = self.image_left
         if keys[pygame.K_RIGHT]:
+            self.image = self.image_right
             self.rect.x += PLAYER_SPEED
         if self.rect.left < 0:
             self.rect.left = 0
@@ -33,6 +45,9 @@ class Player(pygame.sprite.Sprite):
                 self.velocity_y = 0
                 self.on_ground = True
                 break
+
+    def draw(self, screen):
+        screen.blit(self.image, self.rect)
 
     def jump(self):
         if self.on_ground:

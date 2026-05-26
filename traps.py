@@ -6,16 +6,16 @@ from config import TILE_SIZE
 class Spike(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-        self.image = pygame.Surface((TILE_SIZE, 16))
-        self.image.fill('red')
+        self.image = pygame.image.load('assets/spike.png')
+        self.image = pygame.transform.scale(self.image, (TILE_SIZE, 16))
         self.rect = self.image.get_rect(topleft=(x, y))
 
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, x, y, left_bound, right_bound):
         super().__init__()
-        self.image = pygame.Surface((TILE_SIZE, TILE_SIZE))
-        self.image.fill('black')
+        self.image = pygame.image.load('assets/enemy.png')
+        self.image = pygame.transform.scale(self.image, (TILE_SIZE, TILE_SIZE))
         self.rect = self.image.get_rect(topleft=(x, y))
         self.speed = 2
         self.left_bound = left_bound
