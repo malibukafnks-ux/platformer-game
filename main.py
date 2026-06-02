@@ -1,4 +1,8 @@
+import sys, os
+if getattr(sys, 'frozen', False):
+    os.chdir(sys._MEIPASS)
 import pygame
+
 
 from config import WIDTH, HEIGHT, FPS, TILE_SIZE, HITBOX_SHRINK, HURT_BOUNCE_POWER, GRAVITY
 from level import Platform, LEVEL_1, load_level
