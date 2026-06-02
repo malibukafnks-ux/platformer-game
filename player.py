@@ -35,16 +35,20 @@ class Player(pygame.sprite.Sprite):
         if self.rect.right > WIDTH:
             self.rect.right = WIDTH
 
+        prev_bottom = self.rect.bottom
         self.velocity_y += GRAVITY
         self.rect.y += self.velocity_y
 
         self.on_ground = False
         for platform in pygame.sprite.spritecollide(self, platforms, False):
             if self.velocity_y > 0:
-                self.rect.bottom = platform.rect.top
-                self.velocity_y = 0
-                self.on_ground = True
-                break
+                if prev_bottom <= platform.rect.top + 4:
+                    if self.rect.bottom >= platform.rect.top:
+                        if platform.rect.left <= self.rect.centerx < platform.rect.right:
+                            self.rect.bottom = platform.rect.top
+                            self.velocity_y = 0
+                            self.on_ground = True
+                            break
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)
