@@ -42,6 +42,7 @@ def handle_traps(player, enemies, spikes):
         player.on_ground = False
         return True
     return False
+level_width = len(LEVEL_1[0]) * TILE_SIZE
 
 def main():
     player = Player(50, 500)
@@ -83,7 +84,7 @@ def main():
                         player.reset_position()
                         hurt = False
             else:
-                player.update(platforms)
+                player.update(platforms, level_width)
 
                 if handle_falling(player):
                     if player.lives <= 0:
@@ -95,12 +96,28 @@ def main():
                     win = True
         # 3. Отрисовка обновленного состояния игры
         #screen.fill('white')
-        screen.blit(background,(0,0))
-        platforms.draw(screen)
-        spikes.draw(screen)
-        screen.blit(goal.image, goal.rect)
-        screen.blit(player.image, player.rect)
-        enemies.draw(screen)
+        # Камера следит за игроком
+        camera_x = player.rect.centerx - WIDTH // 2
+        if camera_x < 0:
+            camera_x = 0
+        if camera_x > level_width - WIDTH:
+            camera_x = level_width - WIDTH
+
+        # Фон повторяется
+        bg_x = -(camera_x % WIDTH)
+        screen.blit(background, (bg_x, 0))
+        screen.blit(background, (bg_x + WIDTH, 0))
+
+        # Все объекты рисуем со сдвигом камеры
+        for sprite in platforms:
+            screen.blit(sprite.image, (sprite.rect.x - camera_x, sprite.rect.y))
+
+        for sprite in spikes:
+            screen.blit(sprite.image, (sprite.rect.x - camera_x, sprite.rect.y))
+        screen.blit(goal.image, (goal.rect.x - camera_x, goal.rect.y))
+        player.draw(screen, camera_x)
+        for sprite in enemies:
+            screen.blit(sprite.image, (sprite.rect.x - camera_x, sprite.rect.y))
         draw_lives(screen, player.lives, 10, 10)
         if game_over:
             draw_game_over(screen, WIDTH, HEIGHT)

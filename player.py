@@ -22,7 +22,7 @@ class Player(pygame.sprite.Sprite):
         self.rect.topleft = (self.spawn_x, self.spawn_y)
         self.velocity_y = 0
 
-    def update(self, platforms):
+    def update(self, platforms, level_width):
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
             self.rect.x -= PLAYER_SPEED
@@ -32,8 +32,8 @@ class Player(pygame.sprite.Sprite):
             self.rect.x += PLAYER_SPEED
         if self.rect.left < 0:
             self.rect.left = 0
-        if self.rect.right > WIDTH:
-            self.rect.right = WIDTH
+        if self.rect.right > level_width:
+            self.rect.right = level_width
 
         prev_bottom = self.rect.bottom
         self.velocity_y += GRAVITY
@@ -50,8 +50,8 @@ class Player(pygame.sprite.Sprite):
                             self.on_ground = True
                             break
 
-    def draw(self, screen):
-        screen.blit(self.image, self.rect)
+    def draw(self, screen, camera_x):
+        screen.blit(self.image, (self.rect.x - camera_x, self.rect.y))
 
     def jump(self):
         if self.on_ground:
